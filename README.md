@@ -63,27 +63,29 @@ python manage.py runserver
 Для аутентификации и получения токена пользователю необходимо направить запрос на эндпоинт http://127.0.0.1:8000/api/v1/jwt/create/
 
 Пример запроса:
-`{
-"username": "string",
-"password": "string"
-}`
-
+```
+{
+  "username": "string",
+  "password": "string"
+}
+```
 Для содания создание публикации необходимо направит запрос на эндпоинт http://127.0.0.1:8000/api/v1/posts/
 
 Пример запроса:
-
-`{
-"text": "string",
-"image": "string",
-"group": 0
-}`
-
+```
+{
+  "text": "string",
+  "image": "string",
+  "group": 0
+}
+```
 Для пдписки на пользователя необходимо направить запрос на эндпоинт http://127.0.0.1:8000/api/v1/follow/
 
 Пример запроса:
-
-`{
-"following": "string"
-}`
+```
+{
+  "following": "string"
+}
+```
 
 
