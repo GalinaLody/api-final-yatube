@@ -3,9 +3,8 @@ from rest_framework import filters
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 
-from posts.models import Post, Group, Comment, Follow
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     PostSerializer,
@@ -13,6 +12,7 @@ from .serializers import (
     CommentSerializer,
     FollowSerializer
 )
+from posts.models import Post, Group, Comment
 
 
 class ListCreateViewSet(
@@ -25,7 +25,6 @@ class ListCreateViewSet(
     Возвращвет список объектов для обработки GET-запроса.
     Создает объект для обработки POST-запроса.
     """
-    pass
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -44,7 +43,8 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def perform_create(self, serializer):
-        """При создании публикации в качетсве автора сохраняется
+        """Автоматическое проставление автора.
+        При создании публикации в качетсве автора сохраняется
         пользователь, создающий публикацию."""
         serializer.save(author=self.request.user)
 
@@ -60,7 +60,6 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (AllowAny,)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -86,7 +85,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_post().comments.all()
 
     def perform_create(self, serializer):
-        """При создании комментария в качетсве автора сохраняется
+        """Автоматическое проставление автора и привязка к публикации.
+        При создании комментария в качетсве автора сохраняется
         пользователь, создающий комментарий. Комментарий привязывается
         к объекту, модели Post, указанному в запросе."""
         serializer.save(
@@ -96,13 +96,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(ListCreateViewSet):
-    queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter,)
+    permission_classes = (IsAuthenticated,)
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        return self.request.user.follower.all()
 
     def perform_create(self, serializer):
         """Подписка создается от имени пользователя, сделавшего запрос."""
